@@ -3,6 +3,13 @@ module.exports = {
   env: {
     node: true,
   },
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
+  },
   extends: [
     'plugin:vue/essential',
     '@vue/airbnb',
@@ -10,6 +17,9 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'no-tabs': 'off',
+    'no-alert': 'off',
+    'no-useless-escape': 'off',
   },
   parserOptions: {
     parser: 'babel-eslint',
