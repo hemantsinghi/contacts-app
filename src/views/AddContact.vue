@@ -81,11 +81,13 @@
   </b-container>
 </template>
 <script>
+import lodash from 'lodash';
 
 export default {
   data() {
     return {
       form: {
+        id: 0,
         name: '',
         email: '',
         tel: '',
@@ -111,6 +113,10 @@ export default {
           const foundForm = formsArray.find(x => x.name === this.form.name)
           && formsArray.find(x => x.email === this.form.email);
           if (!foundForm) {
+            const lastForm = lodash.maxBy(formsArray, function (formArray) {
+              return formArray.id;
+            });
+            this.form.id = lastForm.id + 1;
             formsArray.push(this.form);
             localStorage.setItem('storedFormData', JSON.stringify(formsArray));
             this.alertVariant = 'success';

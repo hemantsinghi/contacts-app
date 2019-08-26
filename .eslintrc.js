@@ -20,6 +20,9 @@ module.exports = {
     'no-tabs': 'off',
     'no-alert': 'off',
     'no-useless-escape': 'off',
+    'func-names': 'off',
+    'prefer-arrow-callback': 'off',
+    'consistent-return': 'off'
   },
   parserOptions: {
     parser: 'babel-eslint',
