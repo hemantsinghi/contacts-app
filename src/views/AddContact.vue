@@ -1,5 +1,6 @@
 <template>
-  <b-container class="bv-example-row">
+  <b-container class="mt-2">
+    <b-alert v-if="formSubmit" :variant="alertVariant" show dismissible>{{ alertMessage }}</b-alert>
     <b-form @submit="onSubmit" @reset="onReset" v-if="show">
       <b-form-group
         id="input-group-1"
@@ -77,33 +78,53 @@
       <b-button type="submit" variant="primary">Submit</b-button>
       <b-button type="reset" variant="danger">Reset</b-button>
     </b-form>
-    <b-card class="mt-3" header="Form Data Result">
-      <pre class="m-0">{{ form }}</pre>
-    </b-card>
   </b-container>
 </template>
-
-
 <script>
 
 export default {
   data() {
     return {
       form: {
-        email: '',
         name: '',
+        email: '',
         tel: '',
         favorite: false,
       },
       show: true,
+      formSubmit: false,
+      alertVariant: '',
+      alertMessage: '',
     };
   },
   methods: {
     async onSubmit(evt) {
       evt.preventDefault();
+      this.formSubmit = true;
       const validationResult = await this.validateAll();
       if (validationResult) {
-        alert(JSON.stringify(this.form));
+        let formsArray = [];
+        if (localStorage.getItem('storedFormData') !== null) {
+          formsArray = JSON.parse(localStorage.getItem('storedFormData'));
+        }
+        if (formsArray.length > 0) {
+          const foundForm = formsArray.find(x => x.name === this.form.name)
+          && formsArray.find(x => x.email === this.form.email);
+          if (!foundForm) {
+            formsArray.push(this.form);
+            localStorage.setItem('storedFormData', JSON.stringify(formsArray));
+            this.alertVariant = 'success';
+            this.alertMessage = 'Contact added.';
+          } else {
+            this.alertVariant = 'danger';
+            this.alertMessage = 'Duplicate contact.';
+          }
+        } else {
+          formsArray.push(this.form);
+          localStorage.setItem('storedFormData', JSON.stringify(formsArray));
+          this.alertVariant = 'success';
+          this.alertMessage = 'Contact added.';
+        }
       }
     },
     async validateAll() {
@@ -115,8 +136,8 @@ export default {
     onReset(evt) {
       evt.preventDefault();
       // Reset our form values
-      this.form.email = '';
       this.form.name = '';
+      this.form.email = '';
       this.form.tel = '';
       this.form.favorite = false;
       // Trick to reset/clear native browser form validation state
