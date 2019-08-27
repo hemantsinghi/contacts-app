@@ -7,7 +7,10 @@
           <b-button block
             href="#"
             v-b-toggle.favorite-contacts
-            variant="info" class="text-left">Favorites ({{ favoriteContacts.length }})</b-button>
+            variant="info"
+            class="text-left">
+              Favorites ({{ favoriteContacts.length }})
+          </b-button>
         </b-card-header>
         <b-collapse id="favorite-contacts" visible accordion="favorite-contacts" role="tabpanel">
           <b-card-body>
@@ -22,121 +25,131 @@
           <b-button block
             href="#"
             v-b-toggle.all-contacts
-            variant="info" class="text-left">All Contacts ({{ form.length }})</b-button>
+            variant="info"
+            class="text-left">
+              All Contacts ({{ form.length }})
+          </b-button>
         </b-card-header>
         <b-collapse id="all-contacts" visible accordion="all-contacts" role="tabpanel">
           <b-card-body>
             <div v-for="(item, index) in form" :key="item.id">
-        <b-row class="mt-2">
-          <b-col cols="6" v-b-toggle="'accordion-'+index" @click="toggleEditForm(index, 'show')">
-            {{ item.name }}
-            <i v-if="item.favorite" class="fas fa-star mr-4 golden"/>
-          </b-col>
-          <b-col cols="6" class="mb-2">
-            <b-button variant="primary" @click="toggleEditForm(index, 'edit')" class="mr-2">
-              Edit
-            </b-button>
-            <b-button variant="danger" @click="deleteContact(index)">Delete</b-button>
-          </b-col>
-        </b-row>
-        <b-row>
-        <b-collapse
-          :id="'accordion-'+index"
-          accordion="my-accordion"
-          role="tabpanel"
-          class="col-12">
-          <b-form @submit="onSubmit(index, $event)" @reset="onReset(index, $event)">
-            <b-form-group
-              :id="'name-group-' + index"
-              label="Name(*)"
-              :label-for="'name-' + index"
-              class="col-sm-3 float-left">
-              <ValidationProvider name="Name" rules="required" ref="nameProvider">
-                <div slot-scope="{ errors, classes }">
-                  <b-form-input
-                    :id="'name-' + index"
-                    name="Name"
-                    v-model.trim="form[index].name"
-                    type="text"
-                    placeholder="Enter name"
-                    :disabled="disabledForm[index]"
-                    :class="classes"
-                  />
-                  <p>{{ errors[0] }}</p>
+              <b-row class="mt-2">
+                <b-col cols="6"
+                  v-b-toggle="'accordion-'+index"
+                  @click="toggleEditForm(index, 'show')">
+                    {{ item.name }}
+                    <i v-if="item.favorite" class="fas fa-star mr-4 golden"/>
+                </b-col>
+                <b-col cols="6" class="mb-2">
+                  <b-button variant="primary"
+                    @click="toggleEditForm(index, 'edit')"
+                    class="mr-2">
+                    Edit
+                  </b-button>
+                  <b-button variant="danger"
+                    @click="deleteContact(index)">
+                      Delete
+                  </b-button>
+                </b-col>
+              </b-row>
+              <b-row>
+                <b-collapse
+                  :id="'accordion-'+index"
+                  accordion="my-accordion"
+                  role="tabpanel"
+                  class="col-12">
+                    <b-form @submit="onSubmit(index, $event)"
+                      @reset="onReset(index, $event)">
+                      <b-form-group
+                        :id="'name-group-' + index"
+                        label="Name(*)"
+                        :label-for="'name-' + index"
+                        class="col-sm-3 float-left">
+                          <ValidationProvider name="Name"
+                            rules="required"
+                            ref="nameProvider">
+                            <div slot-scope="{ errors, classes }">
+                              <b-form-input
+                                :id="'name-' + index"
+                                name="Name"
+                                v-model.trim="form[index].name"
+                                type="text"
+                                placeholder="Enter name"
+                                :disabled="disabledForm[index]"
+                                :class="classes"/>
+                              <p>{{ errors[0] }}</p>
+                            </div>
+                          </ValidationProvider>
+                      </b-form-group>
+                      <b-form-group
+                        :id="'email-group-' + index"
+                        label="Email address(*)"
+                        :label-for="'email-' + index"
+                        class="col-sm-3 float-left">
+                          <ValidationProvider name="Email"
+                            rules="required|email"
+                            ref="emailProvider">
+                            <div slot-scope="{ errors, classes }">
+                              <b-form-input
+                                :id="'email-' + index"
+                              v-model.trim="form[index].email"
+                                placeholder="Enter email"
+                                :class="classes"
+                                :disabled="disabledForm[index]"/>
+                              <p>{{ errors[0] }}</p>
+                            </div>
+                          </ValidationProvider>
+                      </b-form-group>
+                      <b-form-group
+                        :id="'phone-group-' + index"
+                        label="Phone"
+                        :label-for="'phone-' + index"
+                        class="col-sm-3 float-left">
+                          <ValidationProvider name="Phone number"
+                            ref="telProvider"
+                            :rules="{ regex: /^(\(?\+?[0-9]*\)?)?[0-9_\- \(\)]*$/ }">
+                            <div slot-scope="{ errors, classes }">
+                              <b-form-input
+                                :id="'phone-' + index"
+                                type="tel"
+                                v-model.trim="form[index].tel"
+                                placeholder="Enter phone numer"
+                                :class="classes"
+                                :disabled="disabledForm[index]"/>
+                              <p>{{ errors[0] }}</p>
+                            </div>
+                          </ValidationProvider>
+                        </b-form-group>
+                        <b-form-group
+                          :id="'favorite-group-' + index"
+                          label="Favorite"
+                          :label-for="'favorite-' + index"
+                          class="col-sm-2 float-left">
+                          <b-form-checkbox
+                                :id="'favorite-' + index"
+                                v-model="form[index].favorite"
+                                name="check-button"
+                                switch
+                                @change="changeFavoriteStatus(index, $event)"
+                                :disabled="disabledForm[index]"
+                                size="lg"/>
+                        </b-form-group>
+                        <b-form-group v-if="!disabledForm[index]"
+                          class="col-sm-6 float-left mt-2">
+                          <b-button type="submit" variant="primary">Submit</b-button>
+                          <b-button type="reset" variant="danger">Reset</b-button>
+                          <br>
+                          <span class="text-danger">(*) Press Submit for confirming changes.</span>
+                        </b-form-group>
+                      </b-form>
+                    </b-collapse>
+                  </b-row>
                 </div>
-              </ValidationProvider>
-            </b-form-group>
-            <b-form-group
-              :id="'email-group-' + index"
-              label="Email address(*)"
-              :label-for="'email-' + index"
-              class="col-sm-3 float-left"
-            >
-              <ValidationProvider name="Email" rules="required|email" ref="emailProvider">
-                <div slot-scope="{ errors, classes }">
-                  <b-form-input
-                    :id="'email-' + index"
-                    v-model.trim="form[index].email"
-                    placeholder="Enter email"
-                    :class="classes"
-                    :disabled="disabledForm[index]"
-                  ></b-form-input>
-                  <p>{{ errors[0] }}</p>
-                </div>
-              </ValidationProvider>
-            </b-form-group>
-            <b-form-group
-              :id="'phone-group-' + index"
-              label="Phone"
-              :label-for="'phone-' + index"
-              class="col-sm-3 float-left"
-            >
-              <ValidationProvider name="Phone number"
-                ref="telProvider"
-                :rules="{ regex: /^(\(?\+?[0-9]*\)?)?[0-9_\- \(\)]*$/ }">
-                <div slot-scope="{ errors, classes }">
-                  <b-form-input
-                    :id="'phone-' + index"
-                    type="tel"
-                    v-model.trim="form[index].tel"
-                    placeholder="Enter phone numer"
-                    :class="classes"
-                    :disabled="disabledForm[index]"
-                  />
-                  <p>{{ errors[0] }}</p>
-                </div>
-              </ValidationProvider>
-            </b-form-group>
-            <b-form-group
-              :id="'favorite-group-' + index"
-              label="Favorite"
-              :label-for="'favorite-' + index"
-              class="col-sm-2 float-left"
-            >
-              <b-form-checkbox
-                :id="'favorite-' + index"
-                v-model="form[index].favorite"
-                name="check-button"
-                switch
-                @change="changeFavoriteStatus(index, $event)"
-                :disabled="disabledForm[index]"
-                size="lg"/>
-            </b-form-group>
-            <b-form-group v-if="!disabledForm[index]" class="col-sm-6 float-left mt-2">
-              <b-button type="submit" variant="primary">Submit</b-button>
-              <b-button type="reset" variant="danger">Reset</b-button>
-              <br>
-              <span class="text-danger">(*) Press Submit for confirming changes.</span>
-            </b-form-group>
-            </b-form>
-          </b-collapse>
-          </b-row>
-      </div>
-          </b-card-body>
-        </b-collapse>
-      </b-card>
-    </template>
-    <b-alert v-else variant="danger" show>No contact is available</b-alert>
+              </b-card-body>
+            </b-collapse>
+          </b-card>
+        </template>
+      <b-alert v-else variant="danger" show>No contact is available</b-alert>
   </b-container>
 </template>
 <script>
@@ -187,9 +200,7 @@ export default {
         if (formsArray.length > 0) {
           const foundForm = formsArray.find(x => (x.id === index));
           if (foundForm) {
-            console.log(this.items);
             let otherForms = lodash.filter(this.items, (item => item.id !== index));
-            console.log(otherForms);
             otherForms.push(this.form[index]);
             otherForms = lodash.sortBy(otherForms, ['id']);
             this.items = otherForms;
@@ -211,7 +222,6 @@ export default {
     },
     onReset(index, evt) {
       evt.preventDefault();
-      // Reset our form values
       this.items = JSON.parse(localStorage.getItem('storedFormData'));
       this.form[index].name = this.items[index].name;
       this.form[index].email = this.items[index].email;
@@ -220,18 +230,11 @@ export default {
     },
     changeFavoriteStatus(index, event) {
       if (this.favoriteContacts.length > 0) {
-        if (event && (this.favoriteContacts[index])
+        if (event
+        && (this.favoriteContacts[index])
         && (this.favoriteContacts[index].favorite !== event)) {
           this.favoriteContacts[index].favorite = event;
-        } else if (!event && (!this.favoriteContacts[index])) {
-          this.favoriteContacts = lodash.filter(this.favoriteContacts, (favoriteContact) => {
-            if (favoriteContact.id !== index) {
-              return favoriteContact;
-            }
-          });
-        } else if (event && (!this.favoriteContacts[index])) {
-          this.favoriteContacts.splice(index, 0, this.form[index]);
-        } else if (!event && this.favoriteContacts[index]) {
+        } else if (!event && (!this.favoriteContacts[index] || this.favoriteContacts[index])) {
           this.favoriteContacts[index].favorite = event;
           this.favoriteContacts = lodash.filter(this.favoriteContacts, (favoriteContact) => {
             if (favoriteContact.id !== index) {
@@ -241,7 +244,7 @@ export default {
         } else {
           this.favoriteContacts.splice(index, 0, this.form[index]);
         }
-      } else {
+      } else if (this.form[index].favorite !== event) {
         this.favoriteContacts.push(this.form[index]);
       }
       this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
