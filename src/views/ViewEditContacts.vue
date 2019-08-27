@@ -16,7 +16,7 @@
         </b-card-body>
       </b-collapse>
     </b-card>
-    <b-card v-if="form" no-body class="mb-1">
+    <b-card v-if="items.length > 0" no-body class="mb-1">
       <b-card-header header-tag="header" class="p-1" role="tab">
         <b-button block
           href="#"
@@ -25,7 +25,7 @@
       </b-card-header>
       <b-collapse id="all-contacts" visible accordion="all-contacts" role="tabpanel">
         <b-card-body>
-          <div v-for="(item, index) in form"  :key="item.id">
+          <div v-for="(item, index) in form" :key="item.id">
       <b-row class="mt-2">
         <b-col cols="6" v-b-toggle="'accordion-'+index" @click="toggleEditForm(index, 'show')">
           {{ item.name }}
@@ -35,7 +35,7 @@
           <b-button variant="primary" @click="toggleEditForm(index, 'edit')" class="mr-2">
             Edit
           </b-button>
-          <b-button variant="danger">Delete</b-button>
+          <b-button variant="danger" @click="deleteContact(index)">Delete</b-button>
         </b-col>
       </b-row>
       <b-row>
@@ -67,7 +67,7 @@
           </b-form-group>
           <b-form-group
             :id="'email-group-' + index"
-            label="Email address(*):"
+            label="Email address(*)"
             :label-for="'email-' + index"
             class="col-sm-3 float-left"
           >
@@ -86,7 +86,7 @@
           </b-form-group>
           <b-form-group
             :id="'phone-group-' + index"
-            label="Phone:"
+            label="Phone"
             :label-for="'phone-' + index"
             class="col-sm-3 float-left"
           >
@@ -108,7 +108,7 @@
           </b-form-group>
           <b-form-group
             :id="'favorite-group-' + index"
-            label="Favorite:"
+            label="Favorite"
             :label-for="'favorite-' + index"
             class="col-sm-2 float-left"
           >
@@ -159,7 +159,7 @@ export default {
   },
   created() {
     this.items = JSON.parse(localStorage.getItem('storedFormData'));
-    if (this.items) {
+    if (this.items.length > 0) {
       this.items = lodash.sortBy(this.items, ['id']);
       this.form = this.items;
       this.items.forEach((item, index) => {
@@ -261,6 +261,11 @@ export default {
       document.getElementById('accordion-0').className += ' show';
       document.getElementById('accordion-0').style = '';
       this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
+    },
+    deleteContact(index) {
+      this.items = lodash.remove(this.items, (n => n.id !== index));
+      localStorage.setItem('storedFormData', JSON.stringify(this.items));
+      this.form = this.items;
     },
   },
 };
