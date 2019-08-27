@@ -258,6 +258,8 @@ export default {
     },
     toggleEditForm(index, type) {
       this.disabledForm[index] = type === 'show';
+      document.getElementById('accordion-0').className += ' show';
+      document.getElementById('accordion-0').style = '';
       this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
     },
   },
