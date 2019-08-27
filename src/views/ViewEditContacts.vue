@@ -183,13 +183,16 @@ export default {
         if (localStorage.getItem('storedFormData') !== null) {
           formsArray = JSON.parse(localStorage.getItem('storedFormData'));
           formsArray = lodash.sortBy(formsArray, ['id']);
-          console.log(formsArray);
         }
         if (formsArray.length > 0) {
           const foundForm = formsArray.find(x => (x.id === index));
           if (foundForm) {
-            const otherForms = lodash.remove(this.items, (item => item.id !== index));
+            console.log(this.items);
+            let otherForms = lodash.filter(this.items, (item => item.id !== index));
+            console.log(otherForms);
             otherForms.push(this.form[index]);
+            otherForms = lodash.sortBy(otherForms, ['id']);
+            this.items = otherForms;
             localStorage.setItem('storedFormData', JSON.stringify(otherForms));
             this.alertVariant = 'success';
             this.alertMessage = 'Contact updated.';
@@ -245,8 +248,8 @@ export default {
     },
     toggleEditForm(index, type) {
       this.disabledForm[index] = type === 'show';
-      document.getElementById('accordion-0').className += ' show';
-      document.getElementById('accordion-0').style = '';
+      document.getElementById('accordion-'.concat(index)).className += ' show';
+      document.getElementById('accordion-'.concat(index)).style = '';
       this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
     },
     deleteContact(index) {
