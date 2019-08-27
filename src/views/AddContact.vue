@@ -110,8 +110,9 @@ export default {
           formsArray = JSON.parse(localStorage.getItem('storedFormData'));
         }
         if (formsArray.length > 0) {
-          const foundForm = formsArray.find(x => x.name === this.form.name)
-          && formsArray.find(x => x.email === this.form.email);
+          const foundForm = formsArray.find(formArray => formArray.name === this.form.name
+          && formArray.email === this.form.email
+          && formArray.tel === this.form.tel);
           if (!foundForm) {
             const lastForm = lodash.maxBy(formsArray, function (formArray) {
               return formArray.id;

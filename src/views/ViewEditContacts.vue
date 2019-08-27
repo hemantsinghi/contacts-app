@@ -186,18 +186,18 @@ export default {
           console.log(formsArray);
         }
         if (formsArray.length > 0) {
-          let foundForm = formsArray.find(x => (x.id === index));
+          const foundForm = formsArray.find(x => (x.id === index));
           if (foundForm) {
-            let otherForms = lodash.remove(this.items, (item => item.id !== index));
+            const otherForms = lodash.remove(this.items, (item => item.id !== index));
             otherForms.push(this.form[index]);
             localStorage.setItem('storedFormData', JSON.stringify(otherForms));
             this.alertVariant = 'success';
             this.alertMessage = 'Contact updated.';
           }
         } else {
-            this.alertVariant = 'danger';
-            this.alertMessage = 'Contact not found.';
-          }
+          this.alertVariant = 'danger';
+          this.alertMessage = 'Contact not found.';
+        }
       }
     },
     async validateAll(index) {
@@ -254,8 +254,8 @@ export default {
       localStorage.setItem('storedFormData', JSON.stringify(this.items));
       this.form = this.items;
       this.favoriteContacts = [];
-      this.items.forEach((item, index) => {
-        this.disabledForm[index] = true;
+      this.items.forEach((item, idx) => {
+        this.disabledForm[idx] = true;
         if (item.favorite) {
           this.favoriteContacts.push(item);
         }
