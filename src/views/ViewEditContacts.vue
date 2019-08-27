@@ -27,9 +27,15 @@
         <b-card-body>
           <div v-for="(item, index) in form"  :key="item.id">
       <b-row class="mt-2">
-        <b-col sm="3" v-b-toggle="'accordion-'+index">
+        <b-col cols="6" v-b-toggle="'accordion-'+index" @click="toggleEditForm(index, 'show')">
           {{ item.name }}
           <i v-if="item.favorite" class="fas fa-star mr-4 golden"/>
+        </b-col>
+        <b-col cols="6" class="mb-2">
+          <b-button variant="primary" @click="toggleEditForm(index, 'edit')" class="mr-2">
+            Edit
+          </b-button>
+          <b-button variant="danger">Delete</b-button>
         </b-col>
       </b-row>
       <b-row>
@@ -43,7 +49,7 @@
             :id="'name-group-' + index"
             label="Name(*)"
             :label-for="'name-' + index"
-            class="col-sm-4 float-left">
+            class="col-sm-3 float-left">
             <ValidationProvider name="Name" rules="required" ref="nameProvider">
               <div slot-scope="{ errors, classes }">
                 <b-form-input
@@ -52,6 +58,7 @@
                   v-model.trim="form[index].name"
                   type="text"
                   placeholder="Enter name"
+                  :disabled="disabledForm[index]"
                   :class="classes"
                 />
                 <p>{{ errors[0] }}</p>
@@ -62,7 +69,7 @@
             :id="'email-group-' + index"
             label="Email address(*):"
             :label-for="'email-' + index"
-            class="col-sm-4 float-left"
+            class="col-sm-3 float-left"
           >
             <ValidationProvider name="Email" rules="required|email" ref="emailProvider">
               <div slot-scope="{ errors, classes }">
@@ -71,6 +78,7 @@
                   v-model.trim="form[index].email"
                   placeholder="Enter email"
                   :class="classes"
+                  :disabled="disabledForm[index]"
                 ></b-form-input>
                 <p>{{ errors[0] }}</p>
               </div>
@@ -80,7 +88,7 @@
             :id="'phone-group-' + index"
             label="Phone:"
             :label-for="'phone-' + index"
-            class="col-sm-4 float-left"
+            class="col-sm-3 float-left"
           >
             <ValidationProvider name="Phone number"
               ref="telProvider"
@@ -92,6 +100,7 @@
                   v-model.trim="form[index].tel"
                   placeholder="Enter phone numer"
                   :class="classes"
+                  :disabled="disabledForm[index]"
                 />
                 <p>{{ errors[0] }}</p>
               </div>
@@ -109,9 +118,10 @@
               name="check-button"
               switch
               @change="changeFavoriteStatus(index, $event)"
+              :disabled="disabledForm[index]"
               size="lg"/>
           </b-form-group>
-          <b-form-group class="col-sm-6 float-left mt-2">
+          <b-form-group v-if="!disabledForm[index]" class="col-sm-6 float-left mt-2">
             <b-button type="submit" variant="primary">Submit</b-button>
             <b-button type="reset" variant="danger">Reset</b-button>
             <br>
@@ -144,6 +154,7 @@ export default {
       alertVariant: '',
       alertMessage: '',
       favoriteContacts: [],
+      disabledForm: [],
     };
   },
   created() {
@@ -151,7 +162,8 @@ export default {
     if (this.items) {
       this.items = lodash.sortBy(this.items, ['id']);
       this.form = this.items;
-      this.items.forEach((item) => {
+      this.items.forEach((item, index) => {
+        this.disabledForm[index] = true;
         if (item.favorite) {
           this.favoriteContacts.push(item);
         }
@@ -170,23 +182,27 @@ export default {
           formsArray = lodash.sortBy(formsArray, ['id']);
         }
         if (formsArray.length > 0) {
-          const foundForm = formsArray.find(x => x.name === this.form[index].name)
-          || formsArray.find(x => x.email === this.form[index].email);
+          const foundForm = formsArray.find(x => (x.name === this.form[index].name));
           const foundTelForm = formsArray.find(x => x.tel !== this.form[index].tel);
-          if (!foundForm && foundForm.length === 0) {
+          if (!foundForm) {
             formsArray.push(this.form[index]);
             formsArray = lodash.sortBy(formsArray, ['id']);
             localStorage.setItem('storedFormData', JSON.stringify(formsArray));
             this.alertVariant = 'success';
             this.alertMessage = 'Contact updated.';
           } else if (foundForm || foundTelForm) {
-            let filtered = formsArray.filter((value, idx) => idx !== index);
-            filtered.push(this.form[index]);
-            filtered = lodash.sortBy(filtered, ['id']);
-            localStorage.removeItem('storedFormData');
-            localStorage.setItem('storedFormData', JSON.stringify(filtered));
-            this.alertVariant = 'success';
-            this.alertMessage = 'Contact updated.';
+            if (foundForm.name !== this.form[index].name) {
+              let filtered = formsArray.filter((value, idx) => idx !== index);
+              filtered.push(this.form[index]);
+              filtered = lodash.sortBy(filtered, ['id']);
+              localStorage.removeItem('storedFormData');
+              localStorage.setItem('storedFormData', JSON.stringify(filtered));
+              this.alertVariant = 'success';
+              this.alertMessage = 'Contact updated.';
+            } else {
+              this.alertVariant = 'danger';
+              this.alertMessage = 'Duplicate contact.';
+            }
           }
         } else {
           formsArray.push(this.form[index]);
@@ -207,7 +223,6 @@ export default {
       evt.preventDefault();
       // Reset our form values
       this.items = JSON.parse(localStorage.getItem('storedFormData'));
-      console.log(this.form[index].name, this.items[index].name);
       this.form[index].name = this.items[index].name;
       this.form[index].email = this.items[index].email;
       this.form[index].tel = this.items[index].tel;
@@ -239,6 +254,10 @@ export default {
       } else {
         this.favoriteContacts.push(this.form[index]);
       }
+      this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
+    },
+    toggleEditForm(index, type) {
+      this.disabledForm[index] = type === 'show';
       this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
     },
   },
