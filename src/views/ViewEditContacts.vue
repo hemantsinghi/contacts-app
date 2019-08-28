@@ -47,7 +47,7 @@
                     Edit
                   </b-button>
                   <b-button variant="danger"
-                    @click="deleteContact(index)">
+                    @click="deleteContact(item.id)">
                       Delete
                   </b-button>
                 </b-col>
@@ -58,7 +58,7 @@
                   accordion="my-accordion"
                   role="tabpanel"
                   class="col-12">
-                    <b-form @submit="onSubmit(index, $event)"
+                    <b-form @submit="onSubmit(index, item.id, $event)"
                       @reset="onReset(index, $event)">
                       <b-form-group
                         :id="'name-group-' + index"
@@ -130,7 +130,7 @@
                                 v-model="form[index].favorite"
                                 name="check-button"
                                 switch
-                                @change="changeFavoriteStatus(index, $event)"
+                                @change="changeFavoriteStatus(item.id, $event)"
                                 :disabled="disabledForm[index]"
                                 size="lg"/>
                         </b-form-group>
@@ -184,10 +184,12 @@ export default {
           this.favoriteContacts.push(item);
         }
       });
+      this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['name']);
+      this.items = lodash.sortBy(this.items, ['name']);
     }
   },
   methods: {
-    async onSubmit(index, evt) {
+    async onSubmit(index, itemId, evt) {
       evt.preventDefault();
       this.formSubmit = true;
       const validationResult = await this.validateAll(index);
@@ -198,15 +200,17 @@ export default {
           formsArray = lodash.sortBy(formsArray, ['id']);
         }
         if (formsArray.length > 0) {
-          const foundForm = formsArray.find(x => (x.id === index));
+          const foundForm = formsArray.find(x => (x.id === itemId));
           if (foundForm) {
-            let otherForms = lodash.filter(this.items, (item => item.id !== index));
+            let otherForms = lodash.filter(this.items, (item => item.id !== itemId));
             otherForms.push(this.form[index]);
             otherForms = lodash.sortBy(otherForms, ['id']);
             this.items = otherForms;
             localStorage.setItem('storedFormData', JSON.stringify(otherForms));
             this.alertVariant = 'success';
             this.alertMessage = 'Contact updated.';
+            this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['name']);
+            this.items = lodash.sortBy(this.items, ['name']);
           }
         } else {
           this.alertVariant = 'danger';
@@ -228,35 +232,47 @@ export default {
       this.form[index].tel = this.items[index].tel;
       this.form[index].favorite = this.items[index].favorite;
     },
-    changeFavoriteStatus(index, event) {
+    changeFavoriteStatus(itemId, event) {
+      let formsArray = JSON.parse(localStorage.getItem('storedFormData'));
+      formsArray = lodash.sortBy(formsArray, ['id']);
+      const foundForm = formsArray.find(x => (x.id === itemId));
       if (this.favoriteContacts.length > 0) {
+        const findFavoriteContact = lodash.filter(this.favoriteContacts, (item => item.id !== itemId));
+        const index = lodash.findIndex(this.favoriteContacts, {id: itemId});
         if (event
-        && (this.favoriteContacts[index])
-        && (this.favoriteContacts[index].favorite !== event)) {
-          this.favoriteContacts[index].favorite = event;
-        } else if (!event && (!this.favoriteContacts[index] || this.favoriteContacts[index])) {
-          this.favoriteContacts[index].favorite = event;
-          this.favoriteContacts = lodash.filter(this.favoriteContacts, (favoriteContact) => {
-            if (favoriteContact.id !== index) {
-              return favoriteContact;
-            }
-          });
-        } else {
-          this.favoriteContacts.splice(index, 0, this.form[index]);
+        && (findFavoriteContact[0])
+        && (findFavoriteContact[0].favorite !== event)) {
+          findFavoriteContact[0].favorite = event;
+          this.favoriteContacts[index] = findFavoriteContact[0];
+        } else if (!event && (findFavoriteContact[0])) {
+          this.favoriteContacts = lodash.filter(this.favoriteContacts, (favoriteContact) => favoriteContact.favorite);
+        } else if (!event && !findFavoriteContact[0]) {
+          const index = lodash.findIndex(this.favoriteContacts, {id: itemId});
+          if(index < 0) {
+            this.favoriteContacts.push(foundForm);
+          } else {
+            this.favoriteContacts = lodash.remove(this.favoriteContacts, (favoriteContact) => !favoriteContact.favorite);
+          }
+        } else if (event) {
+          this.favoriteContacts.push(foundForm);
         }
-      } else if (this.form[index].favorite !== event) {
-        this.favoriteContacts.push(this.form[index]);
+        this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id', 'name']);
+      } else if (foundForm.favorite !== event) {
+        const index = lodash.findIndex(this.favoriteContacts, {id: itemId});
+        if(index < 0) {
+          this.favoriteContacts.push(foundForm);
+        }
       }
-      this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
+      this.favoriteContacts = lodash.compact(this.favoriteContacts);
     },
     toggleEditForm(index, type) {
       this.disabledForm[index] = type === 'show';
       document.getElementById('accordion-'.concat(index)).className += ' show';
       document.getElementById('accordion-'.concat(index)).style = '';
-      this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id']);
+      this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id', 'name']);
     },
-    deleteContact(index) {
-      this.items = lodash.remove(this.items, (n => n.id !== index));
+    deleteContact(itemId) {
+      this.items = lodash.remove(this.items, (item => item.id !== itemId));
       localStorage.setItem('storedFormData', JSON.stringify(this.items));
       this.form = this.items;
       this.favoriteContacts = [];
