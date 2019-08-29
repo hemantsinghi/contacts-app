@@ -176,7 +176,7 @@ export default {
   created() {
     this.items = JSON.parse(localStorage.getItem('storedFormData'));
     if (this.items.length > 0) {
-      this.items = lodash.sortBy(this.items, ['id']);
+      this.items = lodash.sortBy(this.items, ['id', 'name']);
       this.form = this.items;
       this.items.forEach((item, index) => {
         this.disabledForm[index] = true;
@@ -184,8 +184,7 @@ export default {
           this.favoriteContacts.push(item);
         }
       });
-      this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['name']);
-      this.items = lodash.sortBy(this.items, ['name']);
+      this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id', 'name']);
     }
   },
   methods: {
@@ -197,20 +196,20 @@ export default {
         let formsArray = [];
         if (localStorage.getItem('storedFormData') !== null) {
           formsArray = JSON.parse(localStorage.getItem('storedFormData'));
-          formsArray = lodash.sortBy(formsArray, ['id']);
+          formsArray = lodash.sortBy(formsArray, ['id', 'name']);
         }
         if (formsArray.length > 0) {
           const foundForm = formsArray.find(x => (x.id === itemId));
           if (foundForm) {
             let otherForms = lodash.filter(this.items, (item => item.id !== itemId));
             otherForms.push(this.form[index]);
-            otherForms = lodash.sortBy(otherForms, ['id']);
+            otherForms = lodash.sortBy(otherForms, ['id', 'name']);
             this.items = otherForms;
             localStorage.setItem('storedFormData', JSON.stringify(otherForms));
             this.alertVariant = 'success';
             this.alertMessage = 'Contact updated.';
-            this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['name']);
-            this.items = lodash.sortBy(this.items, ['name']);
+            this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id', 'name']);
+            this.items = lodash.sortBy(this.items, ['id', 'name']);
           }
         } else {
           this.alertVariant = 'danger';
@@ -234,32 +233,38 @@ export default {
     },
     changeFavoriteStatus(itemId, event) {
       let formsArray = JSON.parse(localStorage.getItem('storedFormData'));
-      formsArray = lodash.sortBy(formsArray, ['id']);
+      formsArray = lodash.sortBy(formsArray, ['id', 'name']);
       const foundForm = formsArray.find(x => (x.id === itemId));
+      const index = lodash.findIndex(this.favoriteContacts, { id: itemId });
       if (this.favoriteContacts.length > 0) {
-        const findFavoriteContact = lodash.filter(this.favoriteContacts, (item => item.id !== itemId));
-        const index = lodash.findIndex(this.favoriteContacts, {id: itemId});
+        let findFavoriteContact = lodash.filter(this.favoriteContacts,
+          (item => item.id === itemId));
+        findFavoriteContact = lodash.head(findFavoriteContact);
         if (event
-        && (findFavoriteContact[0])
-        && (findFavoriteContact[0].favorite !== event)) {
-          findFavoriteContact[0].favorite = event;
-          this.favoriteContacts[index] = findFavoriteContact[0];
-        } else if (!event && (findFavoriteContact[0])) {
-          this.favoriteContacts = lodash.filter(this.favoriteContacts, (favoriteContact) => favoriteContact.favorite);
-        } else if (!event && !findFavoriteContact[0]) {
-          const index = lodash.findIndex(this.favoriteContacts, {id: itemId});
-          if(index < 0) {
+        && (findFavoriteContact)
+        && (findFavoriteContact.favorite !== event)) {
+          findFavoriteContact.favorite = event;
+          this.favoriteContacts[index] = findFavoriteContact;
+        } else if (!event && (findFavoriteContact)) {
+          this.favoriteContacts = lodash.remove(this.favoriteContacts,
+            favoriteContact => favoriteContact.favorite === false);
+        } else if (!event && !findFavoriteContact) {
+          if (index < 0) {
             this.favoriteContacts.push(foundForm);
           } else {
-            this.favoriteContacts = lodash.remove(this.favoriteContacts, (favoriteContact) => !favoriteContact.favorite);
+            this.favoriteContacts = lodash.remove(this.favoriteContacts,
+              favoriteContact => !favoriteContact.favorite);
           }
         } else if (event) {
-          this.favoriteContacts.push(foundForm);
+          if (index < 0) {
+            this.favoriteContacts.push(foundForm);
+          } else {
+            this.favoriteContacts[index].favorite = event;
+          }
         }
         this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id', 'name']);
       } else if (foundForm.favorite !== event) {
-        const index = lodash.findIndex(this.favoriteContacts, {id: itemId});
-        if(index < 0) {
+        if (index < 0) {
           this.favoriteContacts.push(foundForm);
         }
       }

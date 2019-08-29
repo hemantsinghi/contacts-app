@@ -22,7 +22,7 @@ module.exports = {
     'no-useless-escape': 'off',
     'func-names': 'off',
     'prefer-arrow-callback': 'off',
-    'consistent-return': 'off'
+    'consistent-return': 'off',
   },
   parserOptions: {
     parser: 'babel-eslint',
