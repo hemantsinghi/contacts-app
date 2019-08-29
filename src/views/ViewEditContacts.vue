@@ -235,35 +235,24 @@ export default {
       let formsArray = JSON.parse(localStorage.getItem('storedFormData'));
       formsArray = lodash.sortBy(formsArray, ['id', 'name']);
       const foundForm = formsArray.find(x => (x.id === itemId));
-      const index = lodash.findIndex(this.favoriteContacts, { id: itemId });
       if (this.favoriteContacts.length > 0) {
         let findFavoriteContact = lodash.filter(this.favoriteContacts,
           (item => item.id === itemId));
         findFavoriteContact = lodash.head(findFavoriteContact);
-        if (event
-        && (findFavoriteContact)
-        && (findFavoriteContact.favorite !== event)) {
+        if (findFavoriteContact) {
+          const index = lodash.findIndex(this.favoriteContacts, { id: itemId });
           findFavoriteContact.favorite = event;
           this.favoriteContacts[index] = findFavoriteContact;
-        } else if (!event && (findFavoriteContact)) {
-          this.favoriteContacts = lodash.remove(this.favoriteContacts,
-            favoriteContact => favoriteContact.favorite === false);
-        } else if (!event && !findFavoriteContact) {
-          if (index < 0) {
-            this.favoriteContacts.push(foundForm);
-          } else {
+          if (!event) {
             this.favoriteContacts = lodash.remove(this.favoriteContacts,
-              favoriteContact => !favoriteContact.favorite);
+              favoriteContact => favoriteContact.favorite);
           }
-        } else if (event) {
-          if (index < 0) {
-            this.favoriteContacts.push(foundForm);
-          } else {
-            this.favoriteContacts[index].favorite = event;
-          }
+        } else {
+          this.favoriteContacts.push(foundForm);
         }
         this.favoriteContacts = lodash.sortBy(this.favoriteContacts, ['id', 'name']);
       } else if (foundForm.favorite !== event) {
+        const index = lodash.findIndex(this.favoriteContacts, { id: itemId });
         if (index < 0) {
           this.favoriteContacts.push(foundForm);
         }
